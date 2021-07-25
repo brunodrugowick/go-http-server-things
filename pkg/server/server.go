@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -17,7 +16,7 @@ func defaultHandlerFunc() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		_, err := writer.Write([]byte("Golang server running..."))
 		if err != nil {
-			log.Printf("failed to write response to %v", request)
+			writer.WriteHeader(http.StatusInternalServerError)
 		}
 	}
 }

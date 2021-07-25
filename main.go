@@ -11,7 +11,10 @@ import (
 func main() {
 
 	handlerRoot := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, mainHTMLPage())
+		_, err := fmt.Fprintf(w, mainHTMLPage())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 	handlerName := func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
@@ -31,7 +34,10 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
+		err := json.NewEncoder(w).Encode(response)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 
 	// build a basic server from the server package
