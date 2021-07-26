@@ -41,12 +41,12 @@ func main() {
 	}
 
 	// build a basic server from the server package
-	srv := server.NewServerBuilder().
+	srv := server.NewDefaultBuilder().
 		// to listen on 8085
-		Port(8085).
+		SetPort(8085).
 		// with a basic handler for "/"
-		Handle("/", handlerRoot).
-		Handle("/hello", handlerName).
+		WithHandler("/", handlerRoot).
+		WithHandler("/hello", handlerName).
 		Build()
 
 	// starts the server

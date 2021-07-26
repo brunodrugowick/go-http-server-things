@@ -2,66 +2,75 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
-// serverBuilder is a struct helper to build a server
-type serverBuilder struct {
+// builder is the interface for concrete builders to implement
+type builder interface {
+	SetPort(port int) builder
+	WithHandler(path string, f http.HandlerFunc) builder
+	Build() http.Server
+}
+
+// defaultBuilder is a concrete builder that implements the latter
+type defaultBuilder struct {
 	port int
 	// handlers is a map of http.HandlerFunc indexed by the path they handle
 	handlers map[string]http.HandlerFunc
 }
 
-func defaultHandlerFunc() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		_, err := writer.Write([]byte("Golang server running..."))
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-		}
-	}
-}
-
-// NewServerBuilder build a serverBuilder with default values for port (8080) and defaultHandlers (handler for "/").
-// The handler can be overriden by the serverBuilder.Handle method.
-func NewServerBuilder() *serverBuilder {
-	// Define default values for the serverBuilder
+// NewDefaultBuilder exposes the defaultBuilder with default values for port (8080) and defaultHandlers (handler for
+// "/"). The handler can be overridden by the builder.WithHandler method.
+func NewDefaultBuilder() *defaultBuilder {
+	// Define default values for the defaultBuilder
 	var (
 		defaultPort     = 8080
 		defaultHandlers = map[string]http.HandlerFunc{"/": defaultHandlerFunc()}
 	)
 
-	// Returns a serverBuilder with default values
-	return &serverBuilder{
+	// Returns a defaultBuilder with default values
+	return &defaultBuilder{
 		port:     defaultPort,
 		handlers: defaultHandlers,
 	}
 }
 
-// Port sets the port the server listens on
-func (s *serverBuilder) Port(port int) *serverBuilder {
-	s.port = port
-	return s
+// SetPort sets the port the server listens on
+func (b *defaultBuilder) SetPort(port int) builder {
+	b.port = port
+	return b
 }
 
-// Handle defines a function to handle a given path.
-// Since serverBuilder.handlers is a map, one can only have one function for a given path.
+// WithHandler defines a function to handle a given path.
+// Since defaultBuilder.handlers is a map, one can only have one function for a given path.
 // Subsequent calls to a given path will override the function for that path.
-func (s *serverBuilder) Handle(path string, f http.HandlerFunc) *serverBuilder {
-	s.handlers[path] = f
-	return s
+func (b *defaultBuilder) WithHandler(path string, f http.HandlerFunc) builder {
+	b.handlers[path] = f
+	return b
 }
 
-// Build returns a http.Server with the current config from serverBuilder
-func (s *serverBuilder) Build() http.Server {
+// Build returns a http.Server with the current config from defaultBuilder
+func (b *defaultBuilder) Build() http.Server {
 	mux := http.NewServeMux()
-	for path, handlerFunc := range s.handlers {
+	for path, handlerFunc := range b.handlers {
 		mux.HandleFunc(path, handlerFunc)
 	}
 
-	serverAddr := fmt.Sprintf(":%d", s.port)
+	serverAddr := fmt.Sprintf(":%d", b.port)
 
 	return http.Server{
 		Addr:    serverAddr,
 		Handler: mux,
+	}
+}
+
+func defaultHandlerFunc() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		log.Println(request)
+		_, err := writer.Write([]byte("Golang server running..."))
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 }
