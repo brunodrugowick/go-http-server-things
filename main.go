@@ -40,6 +40,15 @@ func main() {
 		}
 	}
 
+	// Creates a default server in port 9090... just because.
+	anotherSrv := server.NewDefaultBuilder().SetPort(9090).Build()
+	go func() {
+		err := anotherSrv.ListenAndServe()
+		if err != nil {
+			log.Printf("Failed to start server in 9090 because %v", err)
+		}
+	}()
+
 	// build a basic server from the server package
 	srv := server.NewDefaultBuilder().
 		// to listen on 8085

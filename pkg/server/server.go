@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"log"
+	"html/template"
 	"net/http"
 )
 
@@ -26,7 +26,7 @@ func NewDefaultBuilder() *defaultBuilder {
 	// Define default values for the defaultBuilder
 	var (
 		defaultPort     = 8080
-		defaultHandlers = map[string]http.HandlerFunc{"/": defaultHandlerFunc()}
+		defaultHandlers = map[string]http.HandlerFunc{"/": defaultHandler}
 	)
 
 	// Returns a defaultBuilder with default values
@@ -65,12 +65,14 @@ func (b *defaultBuilder) Build() http.Server {
 	}
 }
 
-func defaultHandlerFunc() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		log.Println(request)
-		_, err := writer.Write([]byte("Golang server running..."))
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-		}
+func defaultHandler(writer http.ResponseWriter, request *http.Request) {
+	t, _ := template.ParseFiles("templates/default-home-page.html")
+
+	data := struct {
+		Path string
+	}{
+		Path: request.URL.Path,
 	}
+
+	t.Execute(writer, data)
 }
