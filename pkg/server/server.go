@@ -21,15 +21,14 @@ type defaultServerBuilder struct {
 	handlers map[string]http.HandlerFunc
 }
 
+// Define default values for the defaultServerBuilder
+const defaultPort = 8080
+
+var defaultHandlers = map[string]http.HandlerFunc{"/": defaultHandler}
+
 // NewDefaultServerBuilder exposes the defaultServerBuilder with default values for port (8080) and defaultHandlers (handler for
 // "/"). The handler can be overridden by the serverBuilder.WithHandlerFunc method.
 func NewDefaultServerBuilder() *defaultServerBuilder {
-	// Define default values for the defaultServerBuilder
-	var (
-		defaultPort     = 8080
-		defaultHandlers = map[string]http.HandlerFunc{"/": defaultHandler}
-	)
-
 	// Returns a defaultServerBuilder with default values
 	return &defaultServerBuilder{
 		port:     defaultPort,
