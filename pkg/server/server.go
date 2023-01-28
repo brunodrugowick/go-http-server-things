@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -75,7 +76,10 @@ func (b *defaultServerBuilder) Build() http.Server {
 }
 
 func defaultHandler(writer http.ResponseWriter, request *http.Request) {
-	t, _ := template.ParseFiles("templates/default-home-page.html")
+	t, err := template.ParseFiles("templates/default-home-page.html")
+	if err != nil {
+		log.Printf("Error parsing default template: %v", err)
+	}
 
 	data := struct {
 		Path string
