@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -22,7 +23,12 @@ type defaultServerBuilder struct {
 }
 
 // Define default values for the defaultServerBuilder
-const defaultPort = 8080
+const (
+	defaultPort     int = 8080
+	defaultTemplate     = `<h1>Golang server is running...</h1>
+<p>This is the default home page if you don't configure your server. Still, awesome that you're here, don't you agree?</p>
+<p>You're in <code>{{.Path}}</code></p>`
+)
 
 var defaultHandlers = map[string]http.HandlerFunc{"/": defaultHandler}
 
@@ -75,7 +81,10 @@ func (b *defaultServerBuilder) Build() http.Server {
 }
 
 func defaultHandler(writer http.ResponseWriter, request *http.Request) {
-	t, _ := template.ParseFiles("templates/default-home-page.html")
+	t, err := template.New("default").Parse(defaultTemplate)
+	if err != nil {
+		log.Printf("Error parsing default template: %v", err)
+	}
 
 	data := struct {
 		Path string
